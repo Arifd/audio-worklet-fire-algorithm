@@ -269,7 +269,7 @@ setSize(value)
       this.noise2 * this.noise2 * this.noise2 * this.noise2;
 
           // multiply and set final volume
-          this.output = (this.shelf.process(this.noise1 * this.noise2) * 0.08) * this.gain;
+          this.output = (this.shelf.process(this.noise1 * this.noise2) * 0.04) * this.gain; // 0.04 used to be 0.08
 
           return this.output;
       }
