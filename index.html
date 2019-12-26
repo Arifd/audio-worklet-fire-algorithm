@@ -22,6 +22,8 @@
 
     noiseGenerator.connect(gainNode).connect(context.destination);
     noiseGenerator.connect(convolver).connect(context.destination);
+    
+    context.resume();
   };
 
 // create an artificial impulse response
