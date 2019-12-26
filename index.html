@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fire!</title>
+<script>
+  const audioContext = new AudioContext();
+  let noiseGenerator; // in the global scope for use elsewhere in the code
+
+  let isPlaying = false;
+  const startAudioWorkletSound = async (context) =>
+  {
+    isPlaying = true; // used to only have the button trigger this once
+    await context.audioWorklet.addModule('fire-noise-generator.js');
+    noiseGenerator = new AudioWorkletNode(context, 'fire-noise-generator');
+
+    let convolver = context.createConvolver();
+    convolver.buffer = impulseResponse(0.05, 2, 1);
+
+    let gainNode = context.createGain();
+    gainNode.gain.value = 0.3;
+
+    noiseGenerator.connect(gainNode).connect(context.destination);
+    noiseGenerator.connect(convolver).connect(context.destination);
+  };
+
+// create an artificial impulse response
+  function impulseResponse( duration, decay, reverse ) {
+    var sampleRate = audioContext.sampleRate;
+    var length = sampleRate * duration;
+    var impulse = audioContext.createBuffer(2, length, sampleRate);
+    var impulseL = impulse.getChannelData(0);
+    var impulseR = impulse.getChannelData(1);
+
+    if (!decay)
+        decay = 2.0;
+    for (var i = 0; i < length; i++){
+      var n = reverse ? length - i : i;
+      impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
+      impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
+    }
+    return impulse;
+}
+
+function setSize(value)
+{
+  let sizeParam = noiseGenerator.parameters.get('size');
+  sizeParam.value = value;
+}
+</script>
+
+</head>
+<body>
+
+<h1>Audio Worklet</h1>
+
+<button onclick="if (!isPlaying) startAudioWorkletSound(audioContext);">Generate</button>
+<input type="range" min="0" max="1" step="0.001" oninput="setSize(this.value)" value="1">
+
+
+</body></html>
